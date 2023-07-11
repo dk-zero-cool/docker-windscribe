@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Verify the network is up
 
@@ -9,11 +9,15 @@ if [ ! $? -eq 0 ]; then
 fi
 
 # Check the app health
-
-bash /opt/scripts/app-health-check.sh
-
-if [ ! $? -eq 0 ]; then
-    exit 1;
+if [ -f /config/app-health-check.sh ]; then
+    if ! bash /config/app-health-check.sh; then
+        exit 1
+    fi
+    
+elif [ -f /opt/scripts/app-health-check.sh ]; then
+    if ! bash /opt/scripts/app-health-check.sh; then
+        exit 1
+    fi
 fi
 
 exit 0
