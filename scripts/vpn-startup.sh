@@ -20,6 +20,15 @@ declare -a expects=(
     /opt/scripts/vpn-connect.expect
 )
 
+if [ -f /config/app-init.sh ]; then
+    echo "Running custom app init"
+    bash /config/app-init.sh
+    
+elif [ -f /opt/scripts/app-init.sh ]; then
+    echo "Running custom app init"
+    bash /opt/scripts/app-init.sh
+fi
+
 # Start the windscribe service
 if service windscribe-cli start; then
     # Set up the windscribe DNS server
@@ -70,7 +79,7 @@ if [[ $state -eq 0 && -f /config/app-startup.sh ]]; then
     echo "Launching custom app run environment"
     su -w VPN_PORT -g docker_group - docker_user -c "bash /config/app-startup.sh"
     
-elif [[ $state -eq 0 && -f /opt/scripts/app-setup.sh ]]; then
+elif [[ $state -eq 0 && -f /opt/scripts/app-startup.sh ]]; then
     echo "Launching custom app run environment"
     su -w VPN_PORT -g docker_group - docker_user -c "bash /opt/scripts/app-startup.sh"
 
