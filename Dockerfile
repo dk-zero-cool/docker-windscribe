@@ -46,7 +46,7 @@ RUN groupadd -r docker_group  && useradd -r -d /config -g docker_group docker_us
 ADD scripts /opt/scripts/
 
 # Enable the health check for the VPN and app
-HEALTHCHECK --interval=5m --timeout=60s \
+HEALTHCHECK --interval=2m --timeout=30s --start-period=45s --start-interval=5s \
   CMD /bin/bash /opt/scripts/health-check.sh || exit 1
 
 # Run the container
