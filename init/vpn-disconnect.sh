@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stopping the windscribe service
-if ! expect /opt/init/windscribe-disconnect; then
+if ! expect /opt/init/windscribe-disconnect.expect; then
     # Failed to disconnect. 
     # Manual cleanup
 
