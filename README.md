@@ -18,6 +18,20 @@ You can optionally include `app-init.sh` which is executed before anything else,
 
 Another optional file is `app-health-check.sh` which is periodically called to check the health state of the app. This should exit with status codes such as `0` for `HEALTHY`. 
 
+### Keep running
+
+When the file `app-run.sh` is available, it becomes it's job to keep the container alive. If the file exists then the container will shut down. This control is passed to the `app-run.sh` to give custom applications full control of the containers lifecicle. 
+
+It is also a good idea to update `/var/run/init.pid` with the correct `pid` that keeps the container running so to allow things like `health check` to signal the process to stop. 
+
+__Example__
+
+You could add something like this to the end of the `app-init.sh` script. 
+
+```sh
+trap : TERM INT; sleep infinity & echo $! > /var/run/init.pid; wait
+```
+
 ## Usage
 
 ### docker
