@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+
+set timeout 20
+set exit_code 1
+
+spawn windscribe status
+
+expect {
+    "CONNECTED" { set exit_code 0 }
+    timeout { send_user "Connection timed out\n" }
+}
+
+wait
+exit $exit_code
+

@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+
+set timeout 20
+set exit_code 0
+
+spawn windscribe port $env(WINDSCRIBE_PORT)
+
+expect {
+    "Default port changed*" { set exit_code 0 }
+    timeout { send_user "Connection timed out\n" }
+}
+
+wait
+exit $exit_code
+

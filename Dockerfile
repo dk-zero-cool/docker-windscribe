@@ -5,13 +5,12 @@ FROM ubuntu:22.04
 # Build arguments
 ARG BUILD_DATE
 ARG VCS_REF
-ARG VERSION=0.0.13
+ARG VERSION=1.0.0
 
 # Labels
-LABEL com.wiorca.build-date=$BUILD_DATE \
-      com.wiorca.vcs-url="https://github.com/wiorca/docker-windscribe.git" \
-      com.wiorca.vcs-ref=$VCS_REF \
-      com.wiorca.schema-version=$VERSION
+LABEL eu.dbergloev.build-date=$BUILD_DATE \
+      eu.dbergloev.vcs-url="https://github.com/dk-zero-cool/docker-windscribe.git" \
+      eu.dbergloev.schema-version=$VERSION
 
 # The volume for the docker_user home directory, and where configuration files should be stored.
 VOLUME [ "/config" ]
@@ -43,11 +42,12 @@ RUN apt -y update && apt -y dist-upgrade && apt install -y gnupg apt-utils ca-ce
 RUN groupadd -r docker_group  && useradd -r -d /config -g docker_group docker_user
 
 # Add in scripts for health check and start-up
-ADD scripts /opt/scripts/
+ADD init /opt/init/
 
 # Enable the health check for the VPN and app
-HEALTHCHECK --interval=2m --timeout=30s --start-period=45s --start-interval=5s \
-  CMD /bin/bash /opt/scripts/health-check.sh || exit 1
+# HEALTHCHECK --interval=1m --timeout=30s --start-period=45s --start-interval=5s \
+HEALTHCHECK --interval=1m --timeout=30s --start-period=30s \
+  CMD /bin/bash /opt/init/health-check.sh || exit 1
 
 # Run the container
-CMD [ "/bin/bash", "/opt/scripts/vpn-startup.sh" ]
+CMD [ "/bin/bash", "/opt/init/run.sh" ]

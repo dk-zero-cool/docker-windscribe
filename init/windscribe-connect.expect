@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+set exit_code 1
+
+spawn windscribe connect $env(WINDSCRIBE_LOCATION)
+
+expect {
+    "Connected to*" { send_user "VPN connected\n"; set exit_code 0 }
+    "Failed to connect" { send_user "Unable to connect\n" }
+    timeout { send_user "Connection timed out\n" }
+}
+
+wait
+exit $exit_code
+

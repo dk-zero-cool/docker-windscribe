@@ -1,0 +1,17 @@
+#!/usr/bin/expect -f
+
+set timeout 20
+set exit_code 1
+
+spawn windscribe firewall $env(WINDSCRIBE_FIREWALL)
+
+expect {
+    "Firewall Enabled" { set exit_code 0 }
+    "Firewall Disabled" { set exit_code 0 }
+    "Firewall mode changed to: auto" { set exit_code 0 }
+    timeout { send_user "Connection timed out\n" }
+}
+
+wait
+exit $exit_code
+

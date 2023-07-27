@@ -2,31 +2,23 @@
 
 ## About the image
 
-Windscribe docker container, as a base for other images.  It does not forward any ports, has onely one volume for the docker_user, and exits immediately by default.
+Run a Windscribe VPN instance in docker via the Windscribe CLI tool. This can be used by other containers in the following way:
 
-It contains health-checking, and a framework for extending the image however you like to serve your own purposes.  It just handles connecting to windscribe for the moment, and making sure the connection remains active and secure.
-
-This documentation format is inspired by the great people over at linuxserver.io.
+ 1. Set a container to use the Windscribe container network. This way you keep the VPN and the apps using it seprately from one another. It also allows you to use the same VPN connection for multiple containers. 
+ 
+ 2. Extend this image and build your application into it. Preparations for this is already included in this image.
+ 
+ 3. Launch this image and mount your app directory to `/app` in the container _(#See: Extending the image)_
 
 ## Extending the image
 
-There are three script files placed in the /opt/scripts directory that are designed to be overwritten:
+To extend this image you simply need to place a single file into the `/app` directory called `app-run.sh`. This file will be executed on container start after the VPN has been configured and started. This file is executed as the `PUID` user. 
 
-/opt/scripts/app-setup.sh
+You can optionally include `app-init.sh` which is executed before anything else, even before the VPN has been setup. This file is executed as `root` and allows for app configurations before luanch. 
 
-This script is designed to set up the environment for the running application. It is run as root, and should be used to prepare the environment for the running app.
-
-/opt/scripts/app-startup.sh
-
-This script is designed to start the user application after the connection to the VPN has been established.  This script should never exit, and will be run as docker_user:docker_group, with the UID and GID specified in PUID and GUID.
-
-/opt/scripts/app-health-check.sh
-
-This script will be run periodically to check the health of the container.  It MUST return 0 if the container is healthy.  Any other return value will fail.  It is called after the health check for the VPN is completed successfully.  Override as you wish.
+Another optional file is `app-health-check.sh` which is periodically called to check the health state of the app. This should exit with status codes such as `0` for `HEALTHY`. 
 
 ## Usage
-
-Here are some example snippets to help you get started creating a container.
 
 ### docker
 
@@ -45,24 +37,22 @@ docker create \
   -e WINDSCRIBE_LANBYPASS=on \
   -e WINDSCRIBE_FIREWALL=on \
   -e VPN_PORT=8080
-  -v /location/on/host:/config \
-  --dns 8.8.8.8 \
+  -v /location/on/host:/app \
+  --dns 1.1.1.1 \
   --cap-add NET_ADMIN \
   --restart unless-stopped \
-  wiorca/docker-windscribe
+  dk-zero-cool/docker-windscribe:latest
 ```
 
 
 ### docker-compose
-
-Compatible with docker-compose schemas.
 
 ```
 ---
 version: "2.1"
 services:
   docker-windscribe:
-    image: wiorca/docker-windscribe
+    image: dk-zero-cool/docker-windscribe:latest
     container_name: docker-windscribe
     environment:
       - PUID=1000
@@ -77,9 +67,9 @@ services:
       - WINDSCRIBE_FIREWALL=on
       - VPN_PORT=9999
     volumes:
-      - /location/on/host:/config
+      - /location/on/host:/app
     dns:
-      - 8.8.8.8
+      - 1.1.1.1
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
@@ -105,45 +95,16 @@ Container images are configured using parameters passed at runtime (such as thos
 
 ## Volumes
 
-| Volume | Example | Function |
-| :----: | --- | --- |
-| /config | /opt/docker/docker-windscribe | The home directory of docker_user, and where configuration files will live |
-
-## Below are the instructions for updating containers:
-
-### Via Docker Run/Create
-* Update the image: `docker pull wiorca/docker-windscribe`
-* Stop the running container: `docker stop docker-windscribe`
-* Delete the container: `docker rm docker-windscribe`
-* Recreate a new container with the same docker create parameters as instructed above (if mapped correctly to a host folder, your `/config` folder and settings will be preserved)
-* Start the new container: `docker start docker-windscribe`
-* You can also remove the old dangling images: `docker image prune`
-
-### Via Docker Compose
-* Update all images: `docker-compose pull`
-  * or update a single image: `docker-compose pull docker-windscribe`
-* Let compose update all containers as necessary: `docker-compose up -d`
-  * or update a single container: `docker-compose up -d docker-windscribe`
-* You can also remove the old dangling images: `docker image prune`
-
-### Via Watchtower auto-updater (especially useful if you don't remember the original parameters)
-* Pull the latest image at its tag and replace it with the same env variables in one run:
-  ```
-  docker run --rm \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  containrrr/watchtower \
-  --run-once docker-windscribe
-  ```
-* You can also remove the old dangling images: `docker image prune`
+| Volume | Function |
+| :----: | --- |
+| /app | The home directory of docker_user `PUID` |
 
 ## Building locally
 
-If you want to make local modifications to these images for development purposes or just to customize the logic:
 ```
-git clone https://github.com/wiorca/docker-windscribe.git
+git clone https://github.com/dk-zero-cool/docker-windscribe.git
 cd docker-windscribe
 docker build \
   --no-cache \
-  --pull \
-  -t wiorca/docker-windscribe:latest .
+  -t dk-zero-cool/docker-windscribe:latest .
 ```

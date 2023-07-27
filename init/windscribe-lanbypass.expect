@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+
+set timeout 20
+set exit_code 1
+
+spawn windscribe lanbypass $env(WINDSCRIBE_LANBYPASS)
+
+expect {
+    "LAN bybass set to*" { set exit_code 0 }
+    timeout { send_user "Connection timed out\n" }
+}
+
+wait
+exit $exit_code
+
