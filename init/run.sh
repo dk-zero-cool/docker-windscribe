@@ -18,7 +18,7 @@ fi
 
 if [ -f /app/app-run.sh ]; then
     echo "Launching custom app run environment"
-    su -w VPN_PORT -g docker_group - docker_user -c "bash /app/app-run.sh"
+    su -w VPN_PORT -g docker_group - docker_user -c "bash /app/app-run.sh" >/proc/1/fd/1 2>/proc/1/fd/2
 
 else
     trap : TERM INT; sleep infinity & wait
